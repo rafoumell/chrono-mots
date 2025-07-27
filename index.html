@@ -45,8 +45,8 @@
     .hidden {
       display: none;
     }
-    h2,
-    h3 {
+
+    h2, h3 {
       margin: 15px 0;
     }
 
@@ -87,20 +87,10 @@
       font-size: 1rem;
     }
 
-    #musicToggle {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
+    #motAffiche {
+      font-size: 2.2rem;
       font-weight: bold;
-      font-size: 1.2rem;
-      z-index: 1000;
+      margin: 20px 0;
     }
 
     @media (max-width: 600px) {
@@ -112,17 +102,6 @@
   <script src="mots.js"></script>
 </head>
 <body>
-  <!-- Bouton pour couper la musique -->
-  <button id="musicToggle" title="Couper / Activer la musique">🔊</button>
-  <!-- Musique de fond -->
-  <audio
-    id="backgroundMusic"
-    src="https://assets.mixkit.co/music/preview/mixkit-arcade-mecha-game-2196.mp3"
-    autoplay
-    loop
-    volume="0.3"
-  ></audio>
-
   <!-- Configuration -->
   <div id="config">
     <h2>Paramètres de la partie</h2>
@@ -166,9 +145,9 @@
 
   <!-- Jeu -->
   <div id="jeu" class="hidden">
-    <h2 id="motAffiche">Mot : ...</h2>
+    <div id="motAffiche">...</div>
     <h3>
-      Score de <span id="nomEquipe"></span> :
+      Score <span id="nomEquipe"></span> :
       <span id="scoreActuel">0</span>
     </h3>
     <h3>
@@ -205,21 +184,6 @@
   ></audio>
 
   <script>
-    // Gestion de la musique de fond et bouton mute
-    const backgroundMusic = document.getElementById("backgroundMusic");
-    const musicToggle = document.getElementById("musicToggle");
-    let musicOn = true;
-    musicToggle.addEventListener("click", () => {
-      if (musicOn) {
-        backgroundMusic.pause();
-        musicToggle.textContent = "🔈";
-      } else {
-        backgroundMusic.play();
-        musicToggle.textContent = "🔊";
-      }
-      musicOn = !musicOn;
-    });
-
     let teams = [];
     let currentTeamIndex = 0;
     let currentRound = 1;
@@ -281,7 +245,7 @@
 
       document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
       document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score;
-      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+      document.getElementById("motAffiche").textContent = motAleatoire();
 
       document.getElementById("lancement").classList.add("hidden");
       document.getElementById("jeu").classList.remove("hidden");
@@ -317,13 +281,13 @@
         apparitionScore("-1", "red");
       }
       updateScoreDisplay();
-      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+      document.getElementById("motAffiche").textContent = motAleatoire();
     }
 
     function updateScoreDisplay() {
       document.getElementById("scoreActuel").textContent =
         teams[currentTeamIndex].score + scoreRound;
-      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+      document.getElementById("motAffiche").textContent = motAleatoire();
     }
 
     function finDuTour() {
@@ -351,7 +315,7 @@
       document.getElementById("fin").classList.remove("hidden");
       let resultats = "<ul>";
       teams.forEach((team) => {
-        resultats += `<li><strong>${team.name}</strong> : ${team.score} points</li>`;
+        resultats += `<li><strong>${team.name}</strong> ${team.score} points</li>`;
       });
       resultats += "</ul>";
       document.getElementById("resultats").innerHTML = resultats;
@@ -382,7 +346,7 @@
     function updateTeamScores() {
       let html = "<h3>Scores</h3><ul>";
       teams.forEach((team) => {
-        html += `<li>${team.name} : ${team.score} pts</li>`;
+        html += `<li>${team.name} ${team.score} pts</li>`;
       });
       html += "</ul>";
       document.getElementById("teamScores").innerHTML = html;
