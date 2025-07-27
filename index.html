@@ -68,7 +68,7 @@
     let currentRound = 1;
     let totalRounds = 0;
     let timePerRound = 60;
-    let score = 0;
+    let scoreRound = 0; // score du round en cours
     let timer;
     let temps;
 
@@ -104,10 +104,11 @@
     }
 
     function demarrerRound() {
-      score = 0;
+      scoreRound = 0; // reset score round
       temps = timePerRound;
       document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
-      document.getElementById("scoreActuel").textContent = score;
+      // afficher score cumulé (score total + 0)
+      document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
       document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
 
       document.getElementById("lancement").classList.add("hidden");
@@ -129,8 +130,9 @@
     }
 
     function validerMot() {
-      score++;
-      document.getElementById("scoreActuel").textContent = score;
+      scoreRound++;
+      // affichage score cumulé
+      document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
       document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
     }
 
@@ -139,7 +141,8 @@
     }
 
     function finDuTour() {
-      teams[currentTeamIndex].score += score;
+      teams[currentTeamIndex].score += scoreRound;
+
       currentTeamIndex++;
 
       if (currentTeamIndex >= teams.length) {
