@@ -1,64 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Chrono Mots</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#f5f5f5" />
+  <link rel="apple-touch-icon" href="icon.png" />
   <style>
-    body { font-family: sans-serif; padding: 30px; text-align: center; }
-    input, select { margin: 10px; padding: 5px; font-size: 1rem; }
-    button { font-size: 1.2rem; padding: 10px 20px; margin: 10px; }
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h2, h3 {
+      margin: 20px 0 10px;
+    }
+
+    input, select {
+      font-size: 1.1rem;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 90%;
+      max-width: 300px;
+    }
+
+    button {
+      font-size: 1.2rem;
+      padding: 12px 24px;
+      margin: 10px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    .green { background: #4caf50; color: white; }
+    .red { background: #f44336; color: white; }
+    .blue { background: #2196f3; color: white; }
+
     .hidden { display: none; }
-    h2, h3 { margin: 20px 0; }
+
+    #motAffiche {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      margin: 10px 0;
+      font-size: 1.2rem;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
 
-  <!-- Écran de configuration -->
-  <div id="config">
-    <h2>Paramètres de la partie</h2>
+    <!-- Configuration -->
+    <div id="config">
+      <h2>Paramètres de la partie</h2>
 
-    <label>Nombre d'équipes :
       <select id="teamCount" onchange="generateTeamInputs()">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-      </select>
-    </label><br>
+        <option value="2">2 équipes</option>
+        <option value="3">3 équipes</option>
+        <option value="4">4 équipes</option>
+      </select><br>
 
-    <label>Nombre de rounds :
-      <input type="number" id="roundCount" value="3" min="1" />
-    </label><br>
+      <input type="number" id="roundCount" placeholder="Nombre de rounds" value="3" min="1" /><br>
+      <input type="number" id="roundTime" placeholder="Temps par round (sec)" value="60" min="10" /><br>
 
-    <label>Temps par round (sec) :
-      <input type="number" id="roundTime" value="60" min="10" />
-    </label><br>
+      <div id="teamNames"></div>
+      <button class="blue" onclick="validerConfig()">Commencer</button>
+    </div>
 
-    <div id="teamNames"></div>
+    <!-- Lancement -->
+    <div id="lancement" class="hidden">
+      <h2 id="readyText">Équipe X, à vous de jouer !</h2>
+      <button class="blue" onclick="demarrerRound()">Go ▶️</button>
+    </div>
 
-    <button onclick="validerConfig()">Valider</button>
-  </div>
+    <!-- Jeu -->
+    <div id="jeu" class="hidden">
+      <div id="motAffiche">Mot : ...</div>
+      <h3>Équipe : <span id="nomEquipe"></span></h3>
+      <h3>Score : <span id="scoreActuel">0</span></h3>
+      <h3>Temps : <span id="timer">60</span> sec</h3>
 
-  <!-- Écran de lancement -->
-  <div id="lancement" class="hidden">
-    <h2 id="readyText">Équipe X, à vous de jouer !</h2>
-    <button onclick="demarrerRound()">Go ▶️</button>
-  </div>
+      <button class="green" onclick="validerMot()">✅</button>
+      <button class="red" onclick="passerMot()">❌</button>
+    </div>
 
-  <!-- Écran de jeu -->
-  <div id="jeu" class="hidden">
-    <h2 id="motAffiche">Mot : ...</h2>
-    <h3>Score équipe <span id="nomEquipe"></span> : <span id="scoreActuel">0</span></h3>
-    <h3>Temps restant : <span id="timer">60</span> sec</h3>
+    <!-- Résultats -->
+    <div id="fin" class="hidden">
+      <h2>🎉 Partie terminée !</h2>
+      <div id="resultats"></div>
+      <button onclick="location.reload()">Rejouer</button>
+    </div>
 
-    <button onclick="validerMot()">✅</button>
-    <button onclick="passerMot()">❌</button>
-  </div>
-
-  <!-- Écran de fin -->
-  <div id="fin" class="hidden">
-    <h2>Partie terminée 🎉</h2>
-    <div id="resultats"></div>
-    <button onclick="location.reload()">Rejouer</button>
   </div>
 
   <script>
@@ -68,7 +131,7 @@
     let currentRound = 1;
     let totalRounds = 0;
     let timePerRound = 60;
-    let scoreRound = 0; // score du round en cours
+    let scoreRound = 0;
     let timer;
     let temps;
 
@@ -104,10 +167,9 @@
     }
 
     function demarrerRound() {
-      scoreRound = 0; // reset score round
+      scoreRound = 0;
       temps = timePerRound;
       document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
-      // afficher score cumulé (score total + 0)
       document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
       document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
 
@@ -131,7 +193,6 @@
 
     function validerMot() {
       scoreRound++;
-      // affichage score cumulé
       document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
       document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
     }
@@ -168,7 +229,6 @@
         resultats += `<li><strong>${team.name}</strong> : ${team.score} points</li>`;
       });
       resultats += "</ul>";
-
       document.getElementById("resultats").innerHTML = resultats;
     }
   </script>
