@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Chrono Mots</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -13,7 +13,8 @@
       background-color: #fdfdfd;
     }
 
-    input, select {
+    input,
+    select {
       margin: 10px;
       padding: 10px;
       font-size: 1rem;
@@ -32,11 +33,22 @@
       cursor: pointer;
     }
 
-    .green-btn { background-color: #4CAF50; color: white; }
-    .red-btn { background-color: #f44336; color: white; }
+    .green-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+    .red-btn {
+      background-color: #f44336;
+      color: white;
+    }
 
-    .hidden { display: none; }
-    h2, h3 { margin: 15px 0; }
+    .hidden {
+      display: none;
+    }
+    h2,
+    h3 {
+      margin: 15px 0;
+    }
 
     #buttonsContainer {
       display: flex;
@@ -64,7 +76,7 @@
 
     #progressBar {
       height: 100%;
-      background: #4CAF50;
+      background: #4caf50;
       transition: width 1s linear;
     }
 
@@ -73,6 +85,22 @@
       padding-top: 15px;
       border-top: 1px solid #ccc;
       font-size: 1rem;
+    }
+
+    #musicToggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+      z-index: 1000;
     }
 
     @media (max-width: 600px) {
@@ -84,215 +112,281 @@
   <script src="mots.js"></script>
 </head>
 <body>
+  <!-- Bouton pour couper la musique -->
+  <button id="musicToggle" title="Couper / Activer la musique">🔊</button>
+  <!-- Musique de fond -->
+  <audio
+    id="backgroundMusic"
+    src="https://assets.mixkit.co/music/preview/mixkit-arcade-mecha-game-2196.mp3"
+    autoplay
+    loop
+    volume="0.3"
+  ></audio>
 
-<!-- Configuration -->
-<div id="config">
-  <h2>Paramètres de la partie</h2>
-  <select id="teamCount" onchange="generateTeamInputs()">
-    <option value="2">2 équipes</option>
-    <option value="3">3 équipes</option>
-    <option value="4">4 équipes</option>
-  </select><br>
+  <!-- Configuration -->
+  <div id="config">
+    <h2>Paramètres de la partie</h2>
+    <select id="teamCount" onchange="generateTeamInputs()">
+      <option value="2">2 équipes</option>
+      <option value="3">3 équipes</option>
+      <option value="4">4 équipes</option>
+    </select><br />
 
-  <input type="number" id="roundCount" placeholder="Nombre de rounds" value="3" min="1"><br>
-  <input type="number" id="roundTime" placeholder="Temps par round (en sec)" value="60" min="10"><br>
-  <input type="number" id="maxFails" placeholder="Nombre de passes autorisées" value="2" min="0"><br>
+    <input
+      type="number"
+      id="roundCount"
+      placeholder="Nombre de rounds"
+      min="1"
+      autocomplete="off"
+    /><br />
+    <input
+      type="number"
+      id="roundTime"
+      placeholder="Temps par round (en sec)"
+      min="10"
+      autocomplete="off"
+    /><br />
+    <input
+      type="number"
+      id="maxFails"
+      placeholder="Nombre de passes autorisées"
+      min="0"
+      autocomplete="off"
+    /><br />
 
-  <div id="teamNames"></div>
-  <button onclick="validerConfig()">Commencer</button>
-</div>
-
-<!-- Lancement -->
-<div id="lancement" class="hidden">
-  <h2 id="readyText">Équipe X, à vous de jouer !</h2>
-  <button onclick="demarrerRound()">Go ▶️</button>
-</div>
-
-<!-- Jeu -->
-<div id="jeu" class="hidden">
-  <h2 id="motAffiche">Mot : ...</h2>
-  <h3>Score de <span id="nomEquipe"></span> : <span id="scoreActuel">0</span></h3>
-  <h3>Temps restant : <span id="timer">60</span> sec</h3>
-
-  <div id="progressBarContainer">
-    <div id="progressBar"></div>
+    <div id="teamNames"></div>
+    <button onclick="validerConfig()">Commencer</button>
   </div>
 
-  <div id="buttonsContainer">
-    <button class="green-btn" onclick="validerMot()">✅</button>
-    <button class="red-btn" onclick="passerMot()">❌</button>
+  <!-- Lancement -->
+  <div id="lancement" class="hidden">
+    <h2 id="readyText">Équipe X, à vous de jouer !</h2>
+    <button onclick="demarrerRound()">Go ▶️</button>
   </div>
 
-  <div id="scoreFlash"></div>
-</div>
+  <!-- Jeu -->
+  <div id="jeu" class="hidden">
+    <h2 id="motAffiche">Mot : ...</h2>
+    <h3>
+      Score de <span id="nomEquipe"></span> :
+      <span id="scoreActuel">0</span>
+    </h3>
+    <h3>
+      Temps restant : <span id="timer">60</span> sec
+    </h3>
 
-<!-- Fin -->
-<div id="fin" class="hidden">
-  <h2>Partie terminée 🎉</h2>
-  <div id="resultats"></div>
-  <button onclick="location.reload()">Rejouer</button>
-</div>
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
 
-<!-- Score général -->
-<div id="teamScores"></div>
+    <div id="buttonsContainer">
+      <button class="green-btn" onclick="validerMot()">✅</button>
+      <button class="red-btn" onclick="passerMot()">❌</button>
+    </div>
 
-<!-- Son -->
-<audio id="dingSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+    <div id="scoreFlash"></div>
+  </div>
 
-<script>
-let teams = [];
-let currentTeamIndex = 0;
-let currentRound = 1;
-let totalRounds = 0;
-let timePerRound = 60;
-let maxFails = 2;
-let scoreRound = 0;
-let passCount = 0;
-let timer;
-let temps;
+  <!-- Fin -->
+  <div id="fin" class="hidden">
+    <h2>Partie terminée 🎉</h2>
+    <div id="resultats"></div>
+    <button onclick="location.reload()">Rejouer</button>
+  </div>
 
-function generateTeamInputs() {
-  const count = parseInt(document.getElementById("teamCount").value);
-  const container = document.getElementById("teamNames");
-  container.innerHTML = "";
-  for (let i = 0; i < count; i++) {
-    container.innerHTML += `<input placeholder="Nom équipe ${i + 1}" id="team${i}" /><br>`;
-  }
-}
-generateTeamInputs();
+  <!-- Score général -->
+  <div id="teamScores"></div>
 
-function validerConfig() {
-  const count = parseInt(document.getElementById("teamCount").value);
-  totalRounds = parseInt(document.getElementById("roundCount").value);
-  timePerRound = parseInt(document.getElementById("roundTime").value);
-  maxFails = parseInt(document.getElementById("maxFails").value);
-  teams = [];
+  <!-- Son +1 -->
+  <audio
+    id="dingSound"
+    src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"
+    preload="auto"
+  ></audio>
 
-  for (let i = 0; i < count; i++) {
-    const name = document.getElementById(`team${i}`).value.trim();
-    if (!name) {
-      alert(`Merci de saisir un nom pour l'équipe ${i + 1}`);
-      return;
+  <script>
+    // Gestion de la musique de fond et bouton mute
+    const backgroundMusic = document.getElementById("backgroundMusic");
+    const musicToggle = document.getElementById("musicToggle");
+    let musicOn = true;
+    musicToggle.addEventListener("click", () => {
+      if (musicOn) {
+        backgroundMusic.pause();
+        musicToggle.textContent = "🔈";
+      } else {
+        backgroundMusic.play();
+        musicToggle.textContent = "🔊";
+      }
+      musicOn = !musicOn;
+    });
+
+    let teams = [];
+    let currentTeamIndex = 0;
+    let currentRound = 1;
+    let totalRounds = 0;
+    let timePerRound = 60;
+    let maxFails = 2;
+    let scoreRound = 0;
+    let passCount = 0;
+    let timer;
+    let temps;
+
+    function generateTeamInputs() {
+      const count = parseInt(document.getElementById("teamCount").value);
+      const container = document.getElementById("teamNames");
+      container.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        container.innerHTML += `<input placeholder="Nom équipe ${i + 1}" id="team${i}" autocomplete="off" /><br />`;
+      }
     }
-    teams.push({ name, score: 0 });
-  }
+    generateTeamInputs();
 
-  document.getElementById("config").classList.add("hidden");
-  document.getElementById("lancement").classList.remove("hidden");
-  document.getElementById("readyText").textContent = `Équipe ${teams[0].name}, à vous de jouer !`;
-  updateTeamScores();
-}
+    function validerConfig() {
+      const count = parseInt(document.getElementById("teamCount").value);
+      totalRounds = parseInt(document.getElementById("roundCount").value);
+      timePerRound = parseInt(document.getElementById("roundTime").value);
+      maxFails = parseInt(document.getElementById("maxFails").value);
+      teams = [];
 
-function demarrerRound() {
-  scoreRound = 0;
-  passCount = 0;
-  temps = timePerRound;
+      if (
+        !totalRounds ||
+        !timePerRound ||
+        maxFails === undefined ||
+        maxFails === null ||
+        maxFails < 0
+      ) {
+        alert("Merci de remplir correctement tous les paramètres.");
+        return;
+      }
 
-  document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
-  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score;
-  document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+      for (let i = 0; i < count; i++) {
+        const name = document.getElementById(`team${i}`).value.trim();
+        if (!name) {
+          alert(`Merci de saisir un nom pour l'équipe ${i + 1}`);
+          return;
+        }
+        teams.push({ name, score: 0 });
+      }
 
-  document.getElementById("lancement").classList.add("hidden");
-  document.getElementById("jeu").classList.remove("hidden");
-  updateProgressBar();
-
-  timer = setInterval(() => {
-    temps--;
-    document.getElementById("timer").textContent = temps;
-    updateProgressBar();
-    if (temps <= 0) {
-      clearInterval(timer);
-      finDuTour();
+      document.getElementById("config").classList.add("hidden");
+      document.getElementById("lancement").classList.remove("hidden");
+      document.getElementById("readyText").textContent = `Équipe ${teams[0].name}, à vous de jouer !`;
+      updateTeamScores();
     }
-  }, 1000);
-}
 
-function motAleatoire() {
-  const index = Math.floor(Math.random() * mots.length);
-  return mots[index];
-}
+    function demarrerRound() {
+      scoreRound = 0;
+      passCount = 0;
+      temps = timePerRound;
 
-function validerMot() {
-  scoreRound++;
-  playDing();
-  apparitionScore("+1", "green");
-  updateScoreDisplay();
-  document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
-}
+      document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
+      document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score;
+      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
 
-function passerMot() {
-  passCount++;
-  if (passCount > maxFails) {
-    scoreRound--;
-    apparitionScore("-1", "red");
-  }
-  updateScoreDisplay();
-  document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
-}
+      document.getElementById("lancement").classList.add("hidden");
+      document.getElementById("jeu").classList.remove("hidden");
+      updateProgressBar();
 
-function updateScoreDisplay() {
-  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
-}
+      timer = setInterval(() => {
+        temps--;
+        document.getElementById("timer").textContent = temps;
+        updateProgressBar();
+        if (temps <= 0) {
+          clearInterval(timer);
+          finDuTour();
+        }
+      }, 1000);
+    }
 
-function finDuTour() {
-  teams[currentTeamIndex].score += scoreRound;
-  currentTeamIndex++;
-  if (currentTeamIndex >= teams.length) {
-    currentTeamIndex = 0;
-    currentRound++;
-  }
+    function motAleatoire() {
+      const index = Math.floor(Math.random() * mots.length);
+      return mots[index];
+    }
 
-  if (currentRound > totalRounds) {
-    afficherResultats();
-  } else {
-    document.getElementById("jeu").classList.add("hidden");
-    document.getElementById("lancement").classList.remove("hidden");
-    document.getElementById("readyText").textContent = `Équipe ${teams[currentTeamIndex].name}, à vous de jouer !`;
-    updateTeamScores();
-  }
-}
+    function validerMot() {
+      scoreRound++;
+      playDing();
+      apparitionScore("+1", "green");
+      updateScoreDisplay();
+    }
 
-function afficherResultats() {
-  document.getElementById("jeu").classList.add("hidden");
-  document.getElementById("fin").classList.remove("hidden");
-  let resultats = "<ul>";
-  teams.forEach(team => {
-    resultats += `<li><strong>${team.name}</strong> : ${team.score} points</li>`;
-  });
-  resultats += "</ul>";
-  document.getElementById("resultats").innerHTML = resultats;
-  updateTeamScores();
-}
+    function passerMot() {
+      passCount++;
+      if (passCount > maxFails) {
+        scoreRound--;
+        apparitionScore("-1", "red");
+      }
+      updateScoreDisplay();
+      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+    }
 
-function apparitionScore(texte, couleur) {
-  const flash = document.getElementById("scoreFlash");
-  flash.textContent = texte;
-  flash.style.color = couleur;
-  flash.style.opacity = "1";
-  setTimeout(() => {
-    flash.style.opacity = "0";
-  }, 500);
-}
+    function updateScoreDisplay() {
+      document.getElementById("scoreActuel").textContent =
+        teams[currentTeamIndex].score + scoreRound;
+      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+    }
 
-function playDing() {
-  const ding = document.getElementById("dingSound");
-  ding.currentTime = 0;
-  ding.play();
-}
+    function finDuTour() {
+      teams[currentTeamIndex].score += scoreRound;
+      currentTeamIndex++;
+      if (currentTeamIndex >= teams.length) {
+        currentTeamIndex = 0;
+        currentRound++;
+      }
 
-function updateProgressBar() {
-  const pourcentage = (temps / timePerRound) * 100;
-  document.getElementById("progressBar").style.width = `${pourcentage}%`;
-}
+      if (currentRound > totalRounds) {
+        afficherResultats();
+      } else {
+        document.getElementById("jeu").classList.add("hidden");
+        document.getElementById("lancement").classList.remove("hidden");
+        document.getElementById(
+          "readyText"
+        ).textContent = `Équipe ${teams[currentTeamIndex].name}, à vous de jouer !`;
+        updateTeamScores();
+      }
+    }
 
-function updateTeamScores() {
-  let html = "<h3>Scores</h3><ul>";
-  teams.forEach(team => {
-    html += `<li>${team.name} : ${team.score} pts</li>`;
-  });
-  html += "</ul>";
-  document.getElementById("teamScores").innerHTML = html;
-}
-</script>
+    function afficherResultats() {
+      document.getElementById("jeu").classList.add("hidden");
+      document.getElementById("fin").classList.remove("hidden");
+      let resultats = "<ul>";
+      teams.forEach((team) => {
+        resultats += `<li><strong>${team.name}</strong> : ${team.score} points</li>`;
+      });
+      resultats += "</ul>";
+      document.getElementById("resultats").innerHTML = resultats;
+      updateTeamScores();
+    }
+
+    function apparitionScore(texte, couleur) {
+      const flash = document.getElementById("scoreFlash");
+      flash.textContent = texte;
+      flash.style.color = couleur;
+      flash.style.opacity = "1";
+      setTimeout(() => {
+        flash.style.opacity = "0";
+      }, 500);
+    }
+
+    function playDing() {
+      const ding = document.getElementById("dingSound");
+      ding.currentTime = 0;
+      ding.play();
+    }
+
+    function updateProgressBar() {
+      const pourcentage = (temps / timePerRound) * 100;
+      document.getElementById("progressBar").style.width = `${pourcentage}%`;
+    }
+
+    function updateTeamScores() {
+      let html = "<h3>Scores</h3><ul>";
+      teams.forEach((team) => {
+        html += `<li>${team.name} : ${team.score} pts</li>`;
+      });
+      html += "</ul>";
+      document.getElementById("teamScores").innerHTML = html;
+    }
+  </script>
 </body>
 </html>
