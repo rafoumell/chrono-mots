@@ -1,54 +1,173 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Chrono Mots</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 30px; }
-        button { font-size: 2rem; margin: 10px; padding: 10px 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Chrono Mots</title>
+  <style>
+    body { font-family: sans-serif; padding: 30px; text-align: center; }
+    input, select { margin: 10px; padding: 5px; font-size: 1rem; }
+    button { font-size: 1.2rem; padding: 10px 20px; margin: 10px; }
+    .hidden { display: none; }
+    h2, h3 { margin: 20px 0; }
+  </style>
 </head>
 <body>
-    <h2>Mot : <span id="mot">...</span></h2>
-    <h3>Score : <span id="score">0</span></h3>
+
+  <!-- Écran de configuration -->
+  <div id="config">
+    <h2>Paramètres de la partie</h2>
+
+    <label>Nombre d'équipes :
+      <select id="teamCount" onchange="generateTeamInputs()">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </label><br>
+
+    <label>Nombre de rounds :
+      <input type="number" id="roundCount" value="3" min="1" />
+    </label><br>
+
+    <label>Temps par round (sec) :
+      <input type="number" id="roundTime" value="60" min="10" />
+    </label><br>
+
+    <div id="teamNames"></div>
+
+    <button onclick="validerConfig()">Valider</button>
+  </div>
+
+  <!-- Écran de lancement -->
+  <div id="lancement" class="hidden">
+    <h2 id="readyText">Équipe X, à vous de jouer !</h2>
+    <button onclick="demarrerRound()">Go ▶️</button>
+  </div>
+
+  <!-- Écran de jeu -->
+  <div id="jeu" class="hidden">
+    <h2 id="motAffiche">Mot : ...</h2>
+    <h3>Score équipe <span id="nomEquipe"></span> : <span id="scoreActuel">0</span></h3>
     <h3>Temps restant : <span id="timer">60</span> sec</h3>
 
     <button onclick="validerMot()">✅</button>
     <button onclick="passerMot()">❌</button>
+  </div>
 
-    <script>
-        let mots = ["Chat", "Avion", "Banane", "Pyramide", "Robot", "Cactus", "Téléphone", "Lune"];
-        let score = 0;
-        let temps = 60;
+  <!-- Écran de fin -->
+  <div id="fin" class="hidden">
+    <h2>Partie terminée 🎉</h2>
+    <div id="resultats"></div>
+    <button onclick="location.reload()">Rejouer</button>
+  </div>
 
-        function motAleatoire() {
-            let index = Math.floor(Math.random() * mots.length);
-            document.getElementById("mot").textContent = mots[index];
+  <script>
+    const mots = ["Chat", "Avion", "Banane", "Pyramide", "Robot", "Cactus", "Téléphone", "Lune", "Bouteille", "Montagne"];
+    let teams = [];
+    let currentTeamIndex = 0;
+    let currentRound = 1;
+    let totalRounds = 0;
+    let timePerRound = 60;
+    let score = 0;
+    let timer;
+    let temps;
+
+    function generateTeamInputs() {
+      const count = parseInt(document.getElementById("teamCount").value);
+      const container = document.getElementById("teamNames");
+      container.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        container.innerHTML += `<input placeholder="Nom équipe ${i + 1}" id="team${i}" /><br>`;
+      }
+    }
+
+    generateTeamInputs();
+
+    function validerConfig() {
+      const count = parseInt(document.getElementById("teamCount").value);
+      totalRounds = parseInt(document.getElementById("roundCount").value);
+      timePerRound = parseInt(document.getElementById("roundTime").value);
+      teams = [];
+
+      for (let i = 0; i < count; i++) {
+        const name = document.getElementById(`team${i}`).value.trim();
+        if (!name) {
+          alert(`Merci de saisir un nom pour l'équipe ${i + 1}`);
+          return;
         }
+        teams.push({ name, score: 0 });
+      }
 
-        function validerMot() {
-            score += 1;
-            document.getElementById("score").textContent = score;
-            motAleatoire();
+      document.getElementById("config").classList.add("hidden");
+      document.getElementById("lancement").classList.remove("hidden");
+      document.getElementById("readyText").textContent = `Équipe ${teams[0].name}, à vous de jouer !`;
+    }
+
+    function demarrerRound() {
+      score = 0;
+      temps = timePerRound;
+      document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
+      document.getElementById("scoreActuel").textContent = score;
+      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+
+      document.getElementById("lancement").classList.add("hidden");
+      document.getElementById("jeu").classList.remove("hidden");
+
+      timer = setInterval(() => {
+        temps--;
+        document.getElementById("timer").textContent = temps;
+        if (temps <= 0) {
+          clearInterval(timer);
+          finDuTour();
         }
+      }, 1000);
+    }
 
-        function passerMot() {
-            motAleatoire();
-        }
+    function motAleatoire() {
+      const index = Math.floor(Math.random() * mots.length);
+      return mots[index];
+    }
 
-        function demarrerTimer() {
-            let timer = setInterval(() => {
-                temps--;
-                document.getElementById("timer").textContent = temps;
-                if (temps <= 0) {
-                    clearInterval(timer);
-                    alert("Temps écoulé ! Score final : " + score);
-                }
-            }, 1000);
-        }
+    function validerMot() {
+      score++;
+      document.getElementById("scoreActuel").textContent = score;
+      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+    }
 
-        motAleatoire();
-        demarrerTimer();
-    </script>
+    function passerMot() {
+      document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+    }
+
+    function finDuTour() {
+      teams[currentTeamIndex].score += score;
+      currentTeamIndex++;
+
+      if (currentTeamIndex >= teams.length) {
+        currentTeamIndex = 0;
+        currentRound++;
+      }
+
+      if (currentRound > totalRounds) {
+        afficherResultats();
+      } else {
+        document.getElementById("jeu").classList.add("hidden");
+        document.getElementById("lancement").classList.remove("hidden");
+        document.getElementById("readyText").textContent = `Équipe ${teams[currentTeamIndex].name}, à vous de jouer !`;
+      }
+    }
+
+    function afficherResultats() {
+      document.getElementById("jeu").classList.add("hidden");
+      document.getElementById("fin").classList.remove("hidden");
+
+      let resultats = "<ul>";
+      teams.forEach(team => {
+        resultats += `<li><strong>${team.name}</strong> : ${team.score} points</li>`;
+      });
+      resultats += "</ul>";
+
+      document.getElementById("resultats").innerHTML = resultats;
+    }
+  </script>
 </body>
 </html>
