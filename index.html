@@ -94,9 +94,12 @@
   <input type="number" id="teamCount" placeholder="Nombre d’équipes" min="1" />
   <input type="number" id="roundCount" placeholder="Nombre de rounds" min="1" />
   <input type="number" id="roundTime" placeholder="Temps par round (secondes)" min="10" />
-  <input type="number" id="maxFails" placeholder="Nombre d’échecs autorisés" min="0" />
+  <input type="number" id="maxFails" placeholder="Nombre d’échecs ou passes autorisés" min="0" />
   <div id="teamNamesContainer"></div>
-  <button onclick="generateTeamInputs()">Valider les paramètres</button>
+  <button onclick="generateTeamInputs()">Suivant</button>
+  <div id="startGameContainer" class="hidden">
+    <button onclick="startGame()">Commencer la partie</button>
+  </div>
 
   <div id="jeu" class="hidden">
     <h2 id="roundInfo"></h2>
@@ -122,42 +125,35 @@
 
   <div id="teamScores"></div>
 
-  <!-- Sons -->
   <audio id="dingSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
 
   <script>
-    const mots = [/* insère ici la liste de tes 500 mots */];
+    const mots = [/* à compléter avec 500 mots uniques */];
     let teams = [], currentTeamIndex = 0, currentRound = 1,
         totalRounds = 0, timePerRound = 60, maxFails = 2,
         scoreRound = 0, passCount = 0, timer, temps;
 
     function generateTeamInputs() {
       const count = parseInt(document.getElementById("teamCount").value);
-      totalRounds = parseInt(document.getElementById("roundCount").value);
-      timePerRound = parseInt(document.getElementById("roundTime").value);
-      maxFails = parseInt(document.getElementById("maxFails").value);
       const container = document.getElementById("teamNamesContainer");
       container.innerHTML = "";
 
       for (let i = 0; i < count; i++) {
         const input = document.createElement("input");
         input.type = "text";
-        input.placeholder = `Nom équipe ${i + 1}`;
+        input.placeholder = `Nom de l’équipe ${i + 1}`;
         input.id = `team-${i}`;
         container.appendChild(input);
       }
 
-      const goBtn = document.createElement("button");
-      goBtn.innerText = "Commencer la partie";
-      goBtn.onclick = startGame;
-      container.appendChild(goBtn);
+      document.getElementById("startGameContainer").classList.remove("hidden");
     }
 
     function startGame() {
-      const container = document.getElementById("teamNamesContainer");
-      container.classList.add("hidden");
-
       const count = parseInt(document.getElementById("teamCount").value);
+      totalRounds = parseInt(document.getElementById("roundCount").value);
+      timePerRound = parseInt(document.getElementById("roundTime").value);
+      maxFails = parseInt(document.getElementById("maxFails").value);
       teams = [];
 
       for (let i = 0; i < count; i++) {
