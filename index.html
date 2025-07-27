@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chrono Mots</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 30px; }
+        button { font-size: 2rem; margin: 10px; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <h2>Mot : <span id="mot">...</span></h2>
+    <h3>Score : <span id="score">0</span></h3>
+    <h3>Temps restant : <span id="timer">60</span> sec</h3>
+
+    <button onclick="validerMot()">✅</button>
+    <button onclick="passerMot()">❌</button>
+
+    <script>
+        let mots = ["Chat", "Avion", "Banane", "Pyramide", "Robot", "Cactus", "Téléphone", "Lune"];
+        let score = 0;
+        let temps = 60;
+
+        function motAleatoire() {
+            let index = Math.floor(Math.random() * mots.length);
+            document.getElementById("mot").textContent = mots[index];
+        }
+
+        function validerMot() {
+            score += 1;
+            document.getElementById("score").textContent = score;
+            motAleatoire();
+        }
+
+        function passerMot() {
+            motAleatoire();
+        }
+
+        function demarrerTimer() {
+            let timer = setInterval(() => {
+                temps--;
+                document.getElementById("timer").textContent = temps;
+                if (temps <= 0) {
+                    clearInterval(timer);
+                    alert("Temps écoulé ! Score final : " + score);
+                }
+            }, 1000);
+        }
+
+        motAleatoire();
+        demarrerTimer();
+    </script>
+</body>
+</html>
