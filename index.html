@@ -55,6 +55,26 @@
       height: 50px;
     }
 
+    #progressBarContainer {
+      width: 100%;
+      height: 10px;
+      background: #eee;
+      margin: 20px auto;
+    }
+
+    #progressBar {
+      height: 100%;
+      background: #4CAF50;
+      transition: width 1s linear;
+    }
+
+    #teamScores {
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
     @media (max-width: 600px) {
       button {
         width: 80%;
@@ -68,7 +88,6 @@
 <!-- Configuration -->
 <div id="config">
   <h2>Paramètres de la partie</h2>
-
   <select id="teamCount" onchange="generateTeamInputs()">
     <option value="2">2 équipes</option>
     <option value="3">3 équipes</option>
@@ -80,11 +99,10 @@
   <input type="number" id="maxFails" placeholder="Nombre de passes autorisées" value="2" min="0"><br>
 
   <div id="teamNames"></div>
-
   <button onclick="validerConfig()">Commencer</button>
 </div>
 
-<!-- Préparation -->
+<!-- Lancement -->
 <div id="lancement" class="hidden">
   <h2 id="readyText">Équipe X, à vous de jouer !</h2>
   <button onclick="demarrerRound()">Go ▶️</button>
@@ -95,6 +113,10 @@
   <h2 id="motAffiche">Mot : ...</h2>
   <h3>Score de <span id="nomEquipe"></span> : <span id="scoreActuel">0</span></h3>
   <h3>Temps restant : <span id="timer">60</span> sec</h3>
+
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+  </div>
 
   <div id="buttonsContainer">
     <button class="green-btn" onclick="validerMot()">✅</button>
@@ -110,6 +132,12 @@
   <div id="resultats"></div>
   <button onclick="location.reload()">Rejouer</button>
 </div>
+
+<!-- Score général -->
+<div id="teamScores"></div>
+
+<!-- Son -->
+<audio id="dingSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
 <script>
 let teams = [];
@@ -152,6 +180,7 @@ function validerConfig() {
   document.getElementById("config").classList.add("hidden");
   document.getElementById("lancement").classList.remove("hidden");
   document.getElementById("readyText").textContent = `Équipe ${teams[0].name}, à vous de jouer !`;
+  updateTeamScores();
 }
 
 function demarrerRound() {
@@ -160,15 +189,17 @@ function demarrerRound() {
   temps = timePerRound;
 
   document.getElementById("nomEquipe").textContent = teams[currentTeamIndex].name;
-  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
+  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score;
   document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
 
   document.getElementById("lancement").classList.add("hidden");
   document.getElementById("jeu").classList.remove("hidden");
+  updateProgressBar();
 
   timer = setInterval(() => {
     temps--;
     document.getElementById("timer").textContent = temps;
+    updateProgressBar();
     if (temps <= 0) {
       clearInterval(timer);
       finDuTour();
@@ -183,8 +214,9 @@ function motAleatoire() {
 
 function validerMot() {
   scoreRound++;
+  playDing();
   apparitionScore("+1", "green");
-  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
+  updateScoreDisplay();
   document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
 }
 
@@ -194,8 +226,12 @@ function passerMot() {
     scoreRound--;
     apparitionScore("-1", "red");
   }
-  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
+  updateScoreDisplay();
   document.getElementById("motAffiche").textContent = "Mot : " + motAleatoire();
+}
+
+function updateScoreDisplay() {
+  document.getElementById("scoreActuel").textContent = teams[currentTeamIndex].score + scoreRound;
 }
 
 function finDuTour() {
@@ -212,6 +248,7 @@ function finDuTour() {
     document.getElementById("jeu").classList.add("hidden");
     document.getElementById("lancement").classList.remove("hidden");
     document.getElementById("readyText").textContent = `Équipe ${teams[currentTeamIndex].name}, à vous de jouer !`;
+    updateTeamScores();
   }
 }
 
@@ -224,6 +261,7 @@ function afficherResultats() {
   });
   resultats += "</ul>";
   document.getElementById("resultats").innerHTML = resultats;
+  updateTeamScores();
 }
 
 function apparitionScore(texte, couleur) {
@@ -234,6 +272,26 @@ function apparitionScore(texte, couleur) {
   setTimeout(() => {
     flash.style.opacity = "0";
   }, 500);
+}
+
+function playDing() {
+  const ding = document.getElementById("dingSound");
+  ding.currentTime = 0;
+  ding.play();
+}
+
+function updateProgressBar() {
+  const pourcentage = (temps / timePerRound) * 100;
+  document.getElementById("progressBar").style.width = `${pourcentage}%`;
+}
+
+function updateTeamScores() {
+  let html = "<h3>Scores</h3><ul>";
+  teams.forEach(team => {
+    html += `<li>${team.name} : ${team.score} pts</li>`;
+  });
+  html += "</ul>";
+  document.getElementById("teamScores").innerHTML = html;
 }
 </script>
 </body>
